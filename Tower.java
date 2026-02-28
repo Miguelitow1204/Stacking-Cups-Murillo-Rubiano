@@ -163,9 +163,9 @@ public class Tower {
     private void positionTopElement() {
         if (stack.isEmpty())
             return;
-        Object top = stack.get(stack.size() - 1);
-        int stackHeightWithoutTop = getStackHeightWithoutTop();
-        int elementBottomY = ORIGIN_Y - stackHeightWithoutTop * PIXELS_PER_CM;
+        int lastIndex = stack.size() - 1;
+        Object top = stack.get(lastIndex);
+        int elementBottomY = ORIGIN_Y - getHeightUpTo(lastIndex) * PIXELS_PER_CM;
         if (top instanceof Cup) {
             ((Cup) top).setPosition(ORIGIN_X, elementBottomY);
         } else if (top instanceof Lid) {
@@ -186,4 +186,59 @@ public class Tower {
         return total;
     }
 
+    public void removeCup(int number) {
+        int index = findCupIndex(number);
+        if (index == -1) {
+            reportError("Cup " + number + " does not exist in the tower.");
+            lastOperationOk = false;
+            return;
+        }
+        Cup cup = (Cup) stack.get(index);
+        // Si la taza esta emparejada con una tapa, tambien la quito
+        if (cup.isLidded()) {
+            stack.remove(cup.getPairedLid());
+            cup.getPairedLid().makeInvisible();
+            cup.unpair();
+        }
+        cup.makeInvisible();
+        stack.remove(index);
+        repositionFrom(index);
+    }
+
+    private int findCupIndex(int number) {
+        for (int k = 0; k < stack.size(); k++) {
+            Object element = stack.get(k);
+            if (element instanceof Cup && ((Cup) element).getId() == number) {
+                return k;
+            }
+        }
+        return -1;
+    }
+
+    private void repositionFrom(int fromIndex) {
+        for (int k = fromIndex; k < stack.size(); k++) {
+            Object element = stack.get(k);
+            int heightBelow = getHeightUpTo(k);
+            int elementBottomY = ORIGIN_Y - heightBelow * PIXELS_PER_CM;
+            if (element instanceof Cup) {
+                ((Cup) element).setPosition(ORIGIN_X, elementBottomY);
+            } else if (element instanceof Lid) {
+                ((Lid) element).setPosition(ORIGIN_X, elementBottomY);
+            }
+        }
+    }
+
+    private int getHeightUpTo(int index) {
+        int total = 0;
+        for (int k = 0; k < index; k++) {
+            Object element = stack.get(k);
+            if (element instanceof Cup) {
+                total += ((Cup) element).getHeight();
+            } else if (element instanceof Lid) {
+                total += 1;
+            }
+        }
+        return total;
+
+    }
 }
