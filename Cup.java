@@ -4,7 +4,7 @@
  * The base of the cup is 1 cm.
  * 
  * @author (Murillo-Rubiano)
- * @version (1.0)
+ * @version (1.5)
  */
 public class Cup {
     // instance variables - replace the example below with your own
@@ -15,8 +15,12 @@ public class Cup {
     private int yPosition;
     private boolean isVisible;
     private Lid pairedLid;
-    private Rectangle bodyRectangle;
-    private Rectangle baseRectangle;
+    private Rectangle leftWall;
+    private Rectangle rightWall;
+    private Rectangle base;
+    private int leftWallX, leftWallY;   // Posición actual de la pared izquierda (top-left)
+    private int rightWallX, rightWallY; // Posición actual de la pared derecha
+    private int baseX, baseY;           // Posición actual de la base
 
     /**
      * Constructor
@@ -32,16 +36,34 @@ public class Cup {
         this.isVisible = false;
         this.pairedLid = null;
 
-        // Initialize body rectangle (cup without base)
-        // The body height is total height minus 1cm of the base
-        this.bodyRectangle = new Rectangle();
-        this.bodyRectangle.changeColor(this.color);
-        this.bodyRectangle.changeSize((this.height - 1) * 10, 30);
+        //Cup dimensions
+        int wallThickness = 3;
+        int cupWidth = 15 + (this.idNumC * 3);
+        int cupHeight = (this.height - 1) * 10;
+        int baseHeight = 10;
 
-        // Initialize base rectangle (1 cm thick base)
-        this.baseRectangle = new Rectangle();
-        this.baseRectangle.changeColor(this.color);
-        this.baseRectangle.changeSize(10, 30); // 1cm = 10 píxeles
+        //Create rectangles
+        this.leftWall = new Rectangle();
+        this.leftWall.changeColor(this.color);
+        this.leftWall.changeSize(cupHeight, wallThickness);
+
+        this.rightWall = new Rectangle();
+        this.rightWall.changeColor(this.color);
+        this.rightWall.changeSize(cupHeight, wallThickness);
+
+        this.base = new Rectangle();
+        this.base.changeColor(this.color);
+        this.base.changeSize(baseHeight, cupWidth);
+
+        //Save initial position (default BlueJ shapes: 70, 15)
+        this.leftWallX = 70;
+        this.leftWallY = 15;
+        this.rightWallX = 70;
+        this.rightWallY = 15;
+        this.baseX = 70;
+        this.baseY = 15;
+        
+        setPosition(100,200);
     }
 
     // Public methods
@@ -81,28 +103,49 @@ public class Cup {
      */
     public void setPosition(int x, int y) {
         erase();
-
+    
         this.xPosition = x;
-        this.yPosition = y; // yPosition is the bottom of the cup
-
-        // Calculate positions for both rectangles
-        // Y=0 is at the top and increases going down
-        // Base position: sits at yPosition
-        int baseX = xPosition;
-        int baseY = yPosition;
-
-        // Body position: sits above the base. Y is smaller
-        int bodyX = xPosition;
-        int bodyY = yPosition - ((height - 1) * 10); // Body starts (height-1) above base
-
-        // Move rectangles to calculated positions
-        // moveHorizontal and moveVertical are relative to default position (70, 15)
-        baseRectangle.moveHorizontal(baseX - 70);
-        baseRectangle.moveVertical(baseY - 15);
-
-        bodyRectangle.moveHorizontal(bodyX - 70);
-        bodyRectangle.moveVertical(bodyY - 15);
-
+        this.yPosition = y;
+    
+        //Calcular dimensiones
+        int wallThickness = 3;
+        int cupWidth = 15 + (this.idNumC * 3);
+        int cupHeight = (this.height - 1) * 10;
+        int baseHeight = 10;
+    
+        //Posición de la base: su borde inferior debe estar en y
+        int newBaseX = x - (cupWidth / 2);
+        int newBaseY = y - baseHeight; //Esquina superior izquierda de la base
+    
+        //Pared izquierda: sobre la base, misma x, su borde inferior coincide con el borde superior de la base
+        int newLeftWallX = newBaseX;
+        int newLeftWallY = y - cupHeight - baseHeight; //Esquina superior izquierda de la pared
+    
+        //Pared derecha
+        int newRightWallX = newBaseX + cupWidth - wallThickness;
+        int newRightWallY = y - cupHeight - baseHeight;
+    
+        //Mover cada rectángulo de su posición actual a la nueva (movimiento relativo)
+        base.moveHorizontal(newBaseX - baseX);
+        base.moveVertical(newBaseY - baseY);
+        leftWall.moveHorizontal(newLeftWallX - leftWallX);
+        leftWall.moveVertical(newLeftWallY - leftWallY);
+        rightWall.moveHorizontal(newRightWallX - rightWallX);
+        rightWall.moveVertical(newRightWallY - rightWallY);
+    
+        //Actualizar las posiciones guardadas
+        baseX = newBaseX;
+        baseY = newBaseY;
+        leftWallX = newLeftWallX;
+        leftWallY = newLeftWallY;
+        rightWallX = newRightWallX;
+        rightWallY = newRightWallY;
+        
+        if(pairedLid != null){
+            int totalHeight = cupHeight + baseHeight;
+            pairedLid.setPosition(xPosition, yPosition, cupWidth, totalHeight);
+        }
+    
         draw();
     }
 
@@ -111,8 +154,9 @@ public class Cup {
      */
     public void draw() {
         if (isVisible) {
-            bodyRectangle.makeVisible();
-            baseRectangle.makeVisible();
+            leftWall.makeVisible();
+            rightWall.makeVisible();
+            base.makeVisible();
         }
     }
 
@@ -121,8 +165,9 @@ public class Cup {
      */
     public void erase() {
         if (isVisible) {
-            bodyRectangle.makeInvisible();
-            baseRectangle.makeInvisible();
+            leftWall.makeInvisible();
+            rightWall.makeInvisible();
+            base.makeInvisible();
         }
     }
 
@@ -131,8 +176,9 @@ public class Cup {
      */
     public void makeVisible() {
         this.isVisible = true;
-        bodyRectangle.makeVisible();
-        baseRectangle.makeVisible();
+        leftWall.makeVisible();
+        rightWall.makeVisible();
+        base.makeVisible();
     }
 
     /**
@@ -140,8 +186,9 @@ public class Cup {
      */
     public void makeInvisible() {
         this.isVisible = false;
-        bodyRectangle.makeInvisible();
-        baseRectangle.makeInvisible();
+        leftWall.makeInvisible();
+        rightWall.makeInvisible();
+        base.makeInvisible();
     }
 
     /**
@@ -156,7 +203,7 @@ public class Cup {
         // Avoid infinite recursion by checking if already paired
         if (this.pairedLid != lid) {
             this.pairedLid = lid;
-            // lid.pairWith(this); //quitar el comentario en minicilco4 //Bidirectional
+            lid.pairWith(this); //Bidirectional
             // pairing
         }
     }
@@ -168,7 +215,7 @@ public class Cup {
         if (this.pairedLid != null) {
             Lid tempLid = this.pairedLid;
             this.pairedLid = null;
-            // tempLid.unpair(); //quitar comentario en miniciclo4 //Bidirectional unpairing
+            tempLid.unpair(); //Bidirectional unpairing
         }
     }
 

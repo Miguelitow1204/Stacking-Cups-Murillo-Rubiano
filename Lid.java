@@ -4,17 +4,19 @@
  * all lids are 1 cm height
  * 
  * @author (Murillo-Rubiano)
- * @version (1.0)
+ * @version (1.5)
  */
 public class Lid {
     private int number;
-    private int height;
     private String color;
     private int xPosition;
     private int yPosition;
     private boolean isVisible;
     private Cup pairedCup;
     private Rectangle lidRectangle;
+    
+    private int currentX;
+    private int currentY;
 
     private static final int HEIGHT_CM = 1;
     private static final int PIXELS_PER_CM = 10;
@@ -29,7 +31,10 @@ public class Lid {
 
         lidRectangle = new Rectangle();
         lidRectangle.changeColor(this.color);
-        lidRectangle.changeSize(HEIGHT_CM * PIXELS_PER_CM, 30);
+        
+        //initial position
+        currentX = 70;
+        currentY = 15;
     }
 
     private String getColorForId(int id) {
@@ -37,16 +42,24 @@ public class Lid {
         return colors[(id - 1) % colors.length];
     }
 
-    public void setPosition(int x, int y) {
+    public void setPosition(int x,int yCupBottom,int cupWidth,int cupTotalHeight){
         erase();
+
         this.xPosition = x;
-        this.yPosition = y;
+        this.yPosition = yCupBottom;
 
-        // La tapa es de 1cm, el rectangulo se ubica justo en y
-        int lidY = yPosition - HEIGHT_CM * PIXELS_PER_CM;
+        int lidHeight = HEIGHT_CM * PIXELS_PER_CM;
 
-        lidRectangle.moveHorizontal(x - 70);
-        lidRectangle.moveVertical(lidY - 15);
+        int newX = x - cupWidth/2;
+        int newY = yCupBottom - cupTotalHeight - lidHeight;
+
+        lidRectangle.changeSize(lidHeight,cupWidth);
+
+        lidRectangle.moveHorizontal(newX - currentX);
+        lidRectangle.moveVertical(newY - currentY);
+
+        currentX = newX;
+        currentY = newY;
 
         draw();
     }
@@ -72,5 +85,60 @@ public class Lid {
         this.isVisible = false;
         lidRectangle.makeInvisible();
     }
-
+    
+    /**
+     * Pairs this lid with a cup
+     * @param cup (The cup to pair with)
+     */
+    public void pairWith(Cup cup){
+        if(cup == null){
+            return;
+        }
+        
+        if(this.pairedCup != cup){
+            this.pairedCup = cup;
+            cup.pairWith(this);
+        }
+    }
+    
+    /**
+     * Unpairs this lid from its cup
+     */
+    public void unpair(){
+        if(this.pairedCup != null){
+            Cup tempCup = this.pairedCup;
+            this.pairedCup = null;
+            tempCup.unpair();
+        }
+    }
+    
+    /**
+     * Checks if lid is paired with a cup
+     * @retrun true if is paired, false if is not
+     */
+    public boolean isPaired(){
+        return pairedCup != null;
+    }
+    
+    /**
+     * Returns the paired Cup
+     * @return the paired Cup, or null if not paired
+     */
+    public Cup getPairedCup(){
+        return pairedCup;
+    }
+    
+    /**
+     * @return lid's number
+     */
+    public int getNumber(){
+        return number;
+    }
+    
+    /**
+     * @return the lid's height 
+     */
+    public int getHeight(){
+        return HEIGHT_CM;
+    }
 }
