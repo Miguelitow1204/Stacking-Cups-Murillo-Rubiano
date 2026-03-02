@@ -4,7 +4,7 @@
  * all lids are 1 cm height
  * 
  * @author (Murillo-Rubiano)
- * @version (1.5)
+ * @version (2.0)
  */
 public class Lid {
     private int number;
@@ -14,7 +14,7 @@ public class Lid {
     private boolean isVisible;
     private Cup pairedCup;
     private Rectangle lidRectangle;
-    
+
     private int currentX;
     private int currentY;
 
@@ -31,8 +31,8 @@ public class Lid {
 
         lidRectangle = new Rectangle();
         lidRectangle.changeColor(this.color);
-        
-        //initial position
+
+        // initial position
         currentX = 70;
         currentY = 15;
     }
@@ -42,7 +42,35 @@ public class Lid {
         return colors[(id - 1) % colors.length];
     }
 
-    public void setPosition(int x,int yCupBottom,int cupWidth,int cupTotalHeight){
+    /**
+     * Sets position when lid is alone in the stack (not on a cup)
+     * 
+     * @param x       center x coordinate
+     * @param bottomY bottom y coordinate for the lid
+     */
+    public void setPositionAlone(int x, int bottomY) {
+        erase();
+        this.xPosition = x;
+        this.yPosition = bottomY;
+
+        int lidHeight = HEIGHT_CM * PIXELS_PER_CM;
+        int lidWidth = 15 + (this.number * 3); // Same width formula as cups
+
+        int newX = x - lidWidth / 2;
+        int newY = bottomY - lidHeight;
+
+        lidRectangle.changeSize(lidHeight, lidWidth);
+
+        lidRectangle.moveHorizontal(newX - currentX);
+        lidRectangle.moveVertical(newY - currentY);
+
+        currentX = newX;
+        currentY = newY;
+
+        draw();
+    }
+
+    public void setPosition(int x, int yCupBottom, int cupWidth, int cupTotalHeight) {
         erase();
 
         this.xPosition = x;
@@ -50,10 +78,10 @@ public class Lid {
 
         int lidHeight = HEIGHT_CM * PIXELS_PER_CM;
 
-        int newX = x - cupWidth/2;
+        int newX = x - cupWidth / 2;
         int newY = yCupBottom - cupTotalHeight - lidHeight;
 
-        lidRectangle.changeSize(lidHeight,cupWidth);
+        lidRectangle.changeSize(lidHeight, cupWidth);
 
         lidRectangle.moveHorizontal(newX - currentX);
         lidRectangle.moveVertical(newY - currentY);
@@ -85,60 +113,63 @@ public class Lid {
         this.isVisible = false;
         lidRectangle.makeInvisible();
     }
-    
+
     /**
      * Pairs this lid with a cup
+     * 
      * @param cup (The cup to pair with)
      */
-    public void pairWith(Cup cup){
-        if(cup == null){
+    public void pairWith(Cup cup) {
+        if (cup == null) {
             return;
         }
-        
-        if(this.pairedCup != cup){
+
+        if (this.pairedCup != cup) {
             this.pairedCup = cup;
             cup.pairWith(this);
         }
     }
-    
+
     /**
      * Unpairs this lid from its cup
      */
-    public void unpair(){
-        if(this.pairedCup != null){
+    public void unpair() {
+        if (this.pairedCup != null) {
             Cup tempCup = this.pairedCup;
             this.pairedCup = null;
             tempCup.unpair();
         }
     }
-    
+
     /**
      * Checks if lid is paired with a cup
+     * 
      * @retrun true if is paired, false if is not
      */
-    public boolean isPaired(){
+    public boolean isPaired() {
         return pairedCup != null;
     }
-    
+
     /**
      * Returns the paired Cup
+     * 
      * @return the paired Cup, or null if not paired
      */
-    public Cup getPairedCup(){
+    public Cup getPairedCup() {
         return pairedCup;
     }
-    
+
     /**
      * @return lid's number
      */
-    public int getNumber(){
+    public int getNumber() {
         return number;
     }
-    
+
     /**
-     * @return the lid's height 
+     * @return the lid's height
      */
-    public int getHeight(){
+    public int getHeight() {
         return HEIGHT_CM;
     }
 }
