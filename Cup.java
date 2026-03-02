@@ -18,9 +18,13 @@ public class Cup {
     private Rectangle leftWall;
     private Rectangle rightWall;
     private Rectangle base;
-    private int leftWallX, leftWallY;   // Posición actual de la pared izquierda (top-left)
+    private int leftWallX, leftWallY; // Posición actual de la pared izquierda (top-left)
     private int rightWallX, rightWallY; // Posición actual de la pared derecha
-    private int baseX, baseY;           // Posición actual de la base
+    private int baseX, baseY; // Posición actual de la base
+
+    private static final int PIXELS_PER_CM = 10;
+    private static final int WALL_THICKNESS = 3;
+    private static final int BASE_HEIGHT_CM = 1;
 
     /**
      * Constructor
@@ -36,34 +40,33 @@ public class Cup {
         this.isVisible = false;
         this.pairedLid = null;
 
-        //Cup dimensions
-        int wallThickness = 3;
-        int cupWidth = 15 + (this.idNumC * 3);
-        int cupHeight = (this.height - 1) * 10;
-        int baseHeight = 10;
+        // Cup dimensions in pixels
+        int cupWidth = getCupWidth();
+        int wallHeight = getWallHeightPixels();
+        int baseHeightPx = BASE_HEIGHT_CM * PIXELS_PER_CM;
 
-        //Create rectangles
+        // Create rectangles
         this.leftWall = new Rectangle();
         this.leftWall.changeColor(this.color);
-        this.leftWall.changeSize(cupHeight, wallThickness);
+        this.leftWall.changeSize(wallHeight, WALL_THICKNESS);
 
         this.rightWall = new Rectangle();
         this.rightWall.changeColor(this.color);
-        this.rightWall.changeSize(cupHeight, wallThickness);
+        this.rightWall.changeSize(wallHeight, WALL_THICKNESS);
 
         this.base = new Rectangle();
         this.base.changeColor(this.color);
-        this.base.changeSize(baseHeight, cupWidth);
+        this.base.changeSize(baseHeightPx, cupWidth);
 
-        //Save initial position (default BlueJ shapes: 70, 15)
+        // Save initial position (default BlueJ shapes: 70, 15)
         this.leftWallX = 70;
         this.leftWallY = 15;
         this.rightWallX = 70;
         this.rightWallY = 15;
         this.baseX = 70;
         this.baseY = 15;
-        
-        setPosition(100,200);
+
+        setPosition(100, 200);
     }
 
     // Public methods
@@ -76,22 +79,25 @@ public class Cup {
         return idNumC;
     }
 
-    /**
-     * Returns the cup's height
-     * 
-     * @return The height in cm
-     */
-    public int getHeight() {
-        return height;
+    public int getCupWidth() {
+        return 15 + (this.idNumC * 3);
     }
 
-    /**
-     * Returns the cup's color
-     * 
-     * @return The color as a String
-     */
+    private int getWallHeightPixels() {
+        int wallHeightCm = this.height - BASE_HEIGHT_CM;
+        return Math.max(0, wallHeightCm * PIXELS_PER_CM);
+    }
+
+    public int getTotalHeightPixels() {
+        return this.height * PIXELS_PER_CM;
+    }
+
     public String getColor() {
         return color;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     /**
@@ -103,49 +109,49 @@ public class Cup {
      */
     public void setPosition(int x, int y) {
         erase();
-    
+
         this.xPosition = x;
         this.yPosition = y;
-    
-        //Calcular dimensiones
-        int wallThickness = 3;
-        int cupWidth = 15 + (this.idNumC * 3);
-        int cupHeight = (this.height - 1) * 10;
-        int baseHeight = 10;
-    
-        //Posición de la base: su borde inferior debe estar en y
+
+        // Calcular dimensiones
+        int cupWidth = getCupWidth();
+        int wallHeight = getWallHeightPixels();
+        int baseHeightPx = BASE_HEIGHT_CM * PIXELS_PER_CM;
+
+        // Posición de la base: su borde inferior debe estar en y
         int newBaseX = x - (cupWidth / 2);
-        int newBaseY = y - baseHeight; //Esquina superior izquierda de la base
-    
-        //Pared izquierda: sobre la base, misma x, su borde inferior coincide con el borde superior de la base
+        int newBaseY = y - baseHeightPx; // Esquina superior izquierda de la base
+
+        // Pared izquierda: sobre la base, misma x, su borde inferior coincide con el
+        // borde superior de la base
         int newLeftWallX = newBaseX;
-        int newLeftWallY = y - cupHeight - baseHeight; //Esquina superior izquierda de la pared
-    
-        //Pared derecha
-        int newRightWallX = newBaseX + cupWidth - wallThickness;
-        int newRightWallY = y - cupHeight - baseHeight;
-    
-        //Mover cada rectángulo de su posición actual a la nueva (movimiento relativo)
+        int newLeftWallY = y - wallHeight - baseHeightPx; // Esquina superior izquierda de la pared
+
+        // Pared derecha
+        int newRightWallX = newBaseX + cupWidth - WALL_THICKNESS;
+        int newRightWallY = y - wallHeight - baseHeightPx; // Esquina superior derecha de la pared
+
+        // Mover cada rectángulo de su posición actual a la nueva (movimiento relativo)
         base.moveHorizontal(newBaseX - baseX);
         base.moveVertical(newBaseY - baseY);
         leftWall.moveHorizontal(newLeftWallX - leftWallX);
         leftWall.moveVertical(newLeftWallY - leftWallY);
         rightWall.moveHorizontal(newRightWallX - rightWallX);
         rightWall.moveVertical(newRightWallY - rightWallY);
-    
-        //Actualizar las posiciones guardadas
+
+        // Actualizar las posiciones guardadas
         baseX = newBaseX;
         baseY = newBaseY;
         leftWallX = newLeftWallX;
         leftWallY = newLeftWallY;
         rightWallX = newRightWallX;
         rightWallY = newRightWallY;
-        
-        if(pairedLid != null){
-            int totalHeight = cupHeight + baseHeight;
+
+        if (pairedLid != null) {
+            int totalHeight = getTotalHeightPixels();
             pairedLid.setPosition(xPosition, yPosition, cupWidth, totalHeight);
         }
-    
+
         draw();
     }
 
@@ -203,7 +209,7 @@ public class Cup {
         // Avoid infinite recursion by checking if already paired
         if (this.pairedLid != lid) {
             this.pairedLid = lid;
-            lid.pairWith(this); //Bidirectional
+            lid.pairWith(this); // Bidirectional
             // pairing
         }
     }
@@ -215,7 +221,7 @@ public class Cup {
         if (this.pairedLid != null) {
             Lid tempLid = this.pairedLid;
             this.pairedLid = null;
-            tempLid.unpair(); //Bidirectional unpairing
+            tempLid.unpair(); // Bidirectional unpairing
         }
     }
 
