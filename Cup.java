@@ -4,7 +4,7 @@
  * The base of the cup is 1 cm.
  * 
  * @author (Murillo-Rubiano)
- * @version (1.5)
+ * @version (2.0)
  */
 public class Cup {
     // instance variables - replace the example below with your own
