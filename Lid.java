@@ -22,7 +22,12 @@ public class Lid {
     private static final int PIXELS_PER_CM = 10;
 
     public Lid(int number) {
+        this(number, null);
+    }
+
+    public Lid(int number, String color) {
         this.number = number;
+        this.color = (color != null) ? color : getColorForId(number);
         this.color = getColorForId(number);
         this.xPosition = 0;
         this.yPosition = 0;

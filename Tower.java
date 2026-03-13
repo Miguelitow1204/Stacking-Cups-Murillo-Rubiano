@@ -73,14 +73,14 @@ public class Tower {
 
     /**
      * Builds the visual frame (border) of the tower.
-     * Creates a black rectangle that represents the outer boundary of the tower.
+     * Creates a white rectangle that represents the outer boundary of the tower.
      * The frame size is based on the maximum height and width specified.
      * Positions are calculated relative to the tower's origin coordinates.
      */
     private void buildFrame() {
         frame = new Rectangle();
         frame.changeSize(maxHeight * PIXELS_PER_CM, width);
-        frame.changeColor("black");
+        frame.changeColor("White");
         // position the frame: moveHorizontal/moveVertical are relative to default
         // (70,15)
         frame.moveHorizontal(ORIGIN_X - 70);
@@ -91,14 +91,14 @@ public class Tower {
     /**
      * Builds tick marks for each centimeter of height.
      * Creates a small horizontal line for each centimeter from 1 to maxHeight.
-     * Each tick mark is a black rectangle (1 pixel tall, 5 pixels wide) positioned
+     * Each tick mark is a red rectangle (1 pixel tall, 5 pixels wide) positioned
      * at the corresponding height level on the tower frame.
      */
     private void buildTicks() {
         for (int cm = 1; cm <= maxHeight; cm++) {
             Rectangle tick = new Rectangle();
             tick.changeSize(1, 5); // 1px tall, 5px wide
-            tick.changeColor("black");
+            tick.changeColor("red");
             int tickX = ORIGIN_X;
             int tickY = ORIGIN_Y - cm * PIXELS_PER_CM;
             tick.moveHorizontal(tickX - 70);
@@ -121,66 +121,83 @@ public class Tower {
     }
 
     /**
-     * Checks if a cup with the given ID already exists in the tower.
-     * Searches through the list of available cups to find a matching ID.
-     * 
-     * @param i the cup ID to search for
-     * @return true if a cup with the given ID exists, false otherwise
+     * Pushes a new cup onto the stack with the given ID.
+     * The cup ID must be positive and must not already exist in the tower.
+     * A cup can be nested inside the topmost cup if its ID is smaller.
+     * If it does not nest, the tower height must not exceed maxHeight after adding.
+     * On success, the cup is added to both the cups list and the stack,
+     * and all elements are repositioned visually.
+     *
+     * @param i the positive integer ID of the cup to push
      */
-    private boolean cupExists(int i) {
-        for (Cup c : cups) {
-            if (c.getId() == i)
-                return true;
-        }
-        return false;
-    }
-
     public void pushCup(int i) {
+
+        lastOperationOk = false;
+
+        // 1. Validar ID
         if (i <= 0) {
             reportError("Cup ID must be positive.");
-            lastOperationOk = false;
             return;
         }
 
+        // 2. Verificar que no exista
         if (cupExistsInTower(i)) {
             reportError("Cup " + i + " already exists in the tower.");
-            lastOperationOk = false;
             return;
         }
 
+        // 3. Crear la copa
         Cup newCup = new Cup(i);
-        int newHeight = height() + newCup.getHeight();
 
-        if (newHeight > maxHeight) {
-            reportError("Cup " + i + " does not fit. Current height: " + height() +
-                    ", cup height: " + newCup.getHeight() + ", max: " + maxHeight);
-            lastOperationOk = false;
+        // 4. Buscar la copa en el tope real (ignorando lids sin pareja que estén
+        // arriba)
+        Cup topCup = findTopmostCupInStack();
+        boolean fitsInsideTop = (topCup != null) && (newCup.getId() < topCup.getId());
+
+        if (!fitsInsideTop && height() + newCup.getHeight() > maxHeight) {
+            reportError("Tower would exceed maximum height.");
             return;
         }
 
+        // 5. Agregar a la lista de copas y al stack
         cups.add(newCup);
         stack.add(newCup);
-        positionElement(stack.size() - 1);
 
+        // 6. Reposicionar todos los elementos
+        repositionStack();
+
+        // 7. Hacer visible solo si el simulador está visible
         if (isVisible) {
             newCup.makeVisible();
         }
+
+        // 8. Operación exitosa
         lastOperationOk = true;
     }
 
-    private int getStackHeightWithoutTop() {
-        int total = 0;
-        for (int k = 0; k < stack.size() - 1; k++) {
-            Object element = stack.get(k);
-            if (element instanceof Cup) {
-                total += ((Cup) element).getHeight() + 1; // height + lid if lidded?
-            } else if (element instanceof Lid) {
-                total += 1;
+    /**
+     * Searches the stack from top to bottom and returns the first Cup found.
+     * Lids and other non-Cup elements are skipped during the search.
+     *
+     * @return the topmost Cup in the stack, or null if no cup is present
+     */
+    private Cup findTopmostCupInStack() {
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            if (stack.get(i) instanceof Cup) {
+                return (Cup) stack.get(i);
             }
         }
-        return total;
+        return null;
     }
 
+    /**
+     * Removes the cup with the given ID from the stack.
+     * If the cup is paired with a lid, the lid is removed first and the pairing
+     * is dissolved. After removal, all remaining elements are repositioned.
+     * Sets {@code lastOperationOk} to true on success, false otherwise.
+     *
+     * @param i the ID of the cup to remove
+     */
     public void removeCup(int i) {
         int index = findCupIndexInStack(i);
         if (index == -1) {
@@ -214,6 +231,14 @@ public class Tower {
         lastOperationOk = true;
     }
 
+    /**
+     * Finds the index of a cup in the stack by its ID.
+     * Iterates through the stack and returns the position of the first Cup
+     * whose ID matches the given value.
+     *
+     * @param id the cup ID to search for
+     * @return the zero-based index of the cup in the stack, or -1 if not found
+     */
     private int findCupIndexInStack(int id) {
         for (int i = 0; i < stack.size(); i++) {
             if (stack.get(i) instanceof Cup && ((Cup) stack.get(i)).getId() == id) {
@@ -223,6 +248,13 @@ public class Tower {
         return -1;
     }
 
+    /**
+     * Checks whether a lid with the given ID is already registered in the tower.
+     * Searches the lids list (not the stack directly) for a matching ID.
+     *
+     * @param id the lid ID to check
+     * @return true if a lid with the given ID exists in the tower, false otherwise
+     */
     private boolean lidExistsInTower(int id) {
         for (Lid l : lids) {
             if (l.getNumber() == id)
@@ -231,6 +263,13 @@ public class Tower {
         return false;
     }
 
+    /**
+     * Checks whether a cup with the given ID is already registered in the tower.
+     * Searches the cups list (not the stack directly) for a matching ID.
+     *
+     * @param id the cup ID to check
+     * @return true if a cup with the given ID exists in the tower, false otherwise
+     */
     private boolean cupExistsInTower(int id) {
         for (Cup c : cups) {
             if (c.getId() == id)
@@ -239,22 +278,63 @@ public class Tower {
         return false;
     }
 
+    /**
+     * Searches the stack for a cup that can be paired with a lid of the given ID.
+     * A cup is a valid match if its ID equals the given ID and it is not already
+     * paired with another lid.
+     *
+     * @param id the lid ID to find a matching cup for
+     * @return the matching unlidded Cup, or null if none is found
+     */
+    private Cup findMatchingCupForLid(int id) {
+        for (Object element : stack) {
+            if (element instanceof Cup) {
+                Cup cup = (Cup) element;
+                // Match: same ID and cup has no lid yet
+                if (cup.getId() == id && !cup.isLidded()) {
+                    return cup;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Pushes a new lid onto the stack with the given ID.
+     * The lid ID must be positive and must not already exist in the tower.
+     * Adding the lid must not cause the total tower height to exceed maxHeight.
+     * <p>
+     * If a cup with the same ID exists in the tower, the lid inherits that cup's
+     * color and is visually paired with it (placed on top of the cup). If no
+     * matching cup is found, the lid is placed as a standalone element at the
+     * current top of the stack.
+     * </p>
+     * Sets {@code lastOperationOk} to true on success, false otherwise.
+     *
+     * @param i the positive integer ID of the lid to push
+     */
     public void pushLid(int i) {
+        // 1. Validate ID
         if (i <= 0) {
             reportError("Lid ID must be positive.");
             lastOperationOk = false;
             return;
         }
 
+        // 2. Ensure no duplicate lid
         if (lidExistsInTower(i)) {
             reportError("Lid " + i + " already exists in the tower.");
             lastOperationOk = false;
             return;
         }
 
-        Lid newLid = new Lid(i);
-        int newHeight = height() + newLid.getHeight();
+        // 3. Inherit color from matching cup if one exists (same ID)
+        Cup matchingCupForColor = findCupById(i);
+        String lidColor = (matchingCupForColor != null) ? matchingCupForColor.getColor() : null;
+        Lid newLid = new Lid(i, lidColor);
 
+        // 4. Check height constraint before adding
+        int newHeight = height() + newLid.getHeight();
         if (newHeight > maxHeight) {
             reportError("Lid " + i + " does not fit. Current height: " + height() +
                     ", max: " + maxHeight);
@@ -262,42 +342,49 @@ public class Tower {
             return;
         }
 
+        // 5. Register and push the lid onto the stack
         lids.add(newLid);
         stack.add(newLid);
 
-        // Check if there's a matching cup directly below (same ID, not already lidded)
-        boolean paired = false;
-        if (stack.size() >= 2) {
-            Object below = stack.get(stack.size() - 2);
-            if (below instanceof Cup) {
-                Cup cupBelow = (Cup) below;
-                if (cupBelow.getId() == i && !cupBelow.isLidded()) {
-                    cupBelow.pairWith(newLid);
-                    paired = true;
-                }
-            }
-        }
-
-        // Position the lid
-        if (paired) {
-            // The cup will handle positioning through pairWith
-            Cup pairedCup = newLid.getPairedCup();
-            int cupIndex = stack.indexOf(pairedCup);
-            int cupBottomY = ORIGIN_Y - getHeightUpTo(cupIndex) * PIXELS_PER_CM;
-            pairedCup.setPosition(ORIGIN_X, cupBottomY); // This updates lid position too
+        // 6. Pair with matching cup if found; otherwise position as standalone
+        Cup matchingCup = findMatchingCupForLid(i);
+        if (matchingCup != null) {
+            // Pair: position the lid over its cup
+            matchingCup.pairWith(newLid);
+            int cupIndex = stack.indexOf(matchingCup);
+            int cupBottomPixels = getHeightUpTo(cupIndex) * PIXELS_PER_CM;
+            matchingCup.setPosition(ORIGIN_X, ORIGIN_Y - cupBottomPixels);
         } else {
-            positionElement(stack.size() - 1);
+            // No matching cup: place lid independently at the top of the stack
+            int lidHeightPixels = getHeightUpTo(stack.size() - 1) * PIXELS_PER_CM;
+            positionElement(newLid, lidHeightPixels);
         }
 
+        // 7. Show lid only if the simulator is currently visible
         if (isVisible) {
             newLid.makeVisible();
         }
         lastOperationOk = true;
+
     }
 
+    /**
+     * Calculates the accumulated height of all non-nested elements in the stack
+     * up to (but not including) the element at the given index.
+     * Nested cups (those nested inside other cups) are skipped in the calculation.
+     * Each lid contributes 1 centimeter to the height.
+     *
+     * @param index the zero-based position in the stack (height is calculated up to
+     *              this index)
+     * @return the total height in centimeters of all elements before the given
+     *         index
+     */
     private int getHeightUpTo(int index) {
         int total = 0;
         for (int k = 0; k < index; k++) {
+            // Skip cups that are nested inside the cup below them
+            if (isNestedInBelow(k))
+                continue;
             Object element = stack.get(k);
             if (element instanceof Cup) {
                 total += ((Cup) element).getHeight();
@@ -308,14 +395,22 @@ public class Tower {
         return total;
     }
 
+    /**
+     * Removes the topmost (most recently pushed) cup from the stack.
+     * If the cup is paired with a lid, the lid must be directly above the cup
+     * and is automatically removed along with it before unpair happens.
+     * All remaining elements are repositioned after removal.
+     * Sets {@code lastOperationOk} to true on success, false otherwise.
+     */
     public void popCup() {
+        // 1. Check if stack is not empty
         if (stack.isEmpty()) {
             reportError("Stack is empty.");
             lastOperationOk = false;
             return;
         }
 
-        // Find the topmost cup
+        // 2. Find the topmost cup (skip any lids on top)
         int topCupIndex = -1;
         for (int i = stack.size() - 1; i >= 0; i--) {
             if (stack.get(i) instanceof Cup) {
@@ -324,6 +419,7 @@ public class Tower {
             }
         }
 
+        // 3. Verify a cup was found
         if (topCupIndex == -1) {
             reportError("No cups in the stack.");
             lastOperationOk = false;
@@ -332,7 +428,7 @@ public class Tower {
 
         Cup topCup = (Cup) stack.get(topCupIndex);
 
-        // Check if there's a lid directly above
+        // 4. If there's a lid directly above, check if it's paired with this cup
         if (topCupIndex < stack.size() - 1) {
             Object above = stack.get(topCupIndex + 1);
             if (above instanceof Lid && topCup.isLidded() && topCup.getPairedLid() == above) {
@@ -343,12 +439,14 @@ public class Tower {
                 lids.remove(lid);
                 topCup.unpair();
             } else {
+                // Cups cannot be removed if there are unpaired elements above
                 reportError("Cannot pop cup - there are elements above it.");
                 lastOperationOk = false;
                 return;
             }
         }
 
+        // 5. Remove the cup and reposition remaining elements
         topCup.makeInvisible();
         stack.remove(topCupIndex);
         cups.remove(topCup);
@@ -356,14 +454,22 @@ public class Tower {
         lastOperationOk = true;
     }
 
+    /**
+     * Removes the topmost (most recently pushed) lid from the stack.
+     * The lid must be at the very top of the stack with no elements above it.
+     * If the lid is paired with a cup, the pairing is dissolved.
+     * All remaining elements are repositioned after removal.
+     * Sets {@code lastOperationOk} to true on success, false otherwise.
+     */
     public void popLid() {
+        // 1. Check if stack is not empty
         if (stack.isEmpty()) {
             reportError("Stack is empty.");
             lastOperationOk = false;
             return;
         }
 
-        // Find the topmost lid
+        // 2. Find the topmost lid
         int topLidIndex = -1;
         for (int i = stack.size() - 1; i >= 0; i--) {
             if (stack.get(i) instanceof Lid) {
@@ -372,13 +478,14 @@ public class Tower {
             }
         }
 
+        // 3. Verify a lid was found
         if (topLidIndex == -1) {
             reportError("No lids in the stack.");
             lastOperationOk = false;
             return;
         }
 
-        // Check if there are elements above
+        // 4. Ensure the lid is truly at the top (no elements above it)
         if (topLidIndex < stack.size() - 1) {
             reportError("Cannot pop lid - there are elements above it.");
             lastOperationOk = false;
@@ -387,11 +494,12 @@ public class Tower {
 
         Lid topLid = (Lid) stack.get(topLidIndex);
 
-        // If paired, unpair
+        // 5. If paired with a cup, dissolve the pairing
         if (topLid.isPaired()) {
             topLid.unpair();
         }
 
+        // 6. Remove the lid and reposition remaining elements
         topLid.makeInvisible();
         stack.remove(topLidIndex);
         lids.remove(topLid);
@@ -399,57 +507,380 @@ public class Tower {
         lastOperationOk = true;
     }
 
-    private void positionElement(int index) {
-        if (index < 0 || index >= stack.size())
-            return;
+    /**
+     * Positions a single element (cup or lid) at the specified height in pixels.
+     * For cups, sets position and makes visible if the simulator is visible.
+     * For lids, checks if they are paired; paired lids are not positioned here
+     * (their position is already handled by their paired cup). Unpaired lids
+     * are positioned independently at the given height.
+     *
+     * @param element      the Cup or Lid object to position
+     * @param heightPixels the vertical position in pixels (measured from tower
+     *                     origin)
+     */
+    private void positionElement(Object element, int heightPixels) {
 
-        Object element = stack.get(index);
-        int heightBelow = getHeightUpTo(index);
-        int elementBottomY = ORIGIN_Y - heightBelow * PIXELS_PER_CM;
+        int x = ORIGIN_X;
+        int y = ORIGIN_Y - heightPixels;
 
         if (element instanceof Cup) {
+
             Cup cup = (Cup) element;
-            cup.setPosition(ORIGIN_X, elementBottomY);
-            // Note: if cup is paired with lid, Cup.setPosition will update lid position
+            cup.setPosition(x, y);
+            if (isVisible) {
+                cup.makeVisible();
+            }
+
         } else if (element instanceof Lid) {
+
             Lid lid = (Lid) element;
+            // If paired, the cup has already positioned it; skip here
             if (lid.isPaired()) {
-                // Lid is paired - its position is managed by the cup
-                // But we need to ensure it's positioned correctly
-                Cup pairedCup = lid.getPairedCup();
-                int cupWidth = pairedCup.getCupWidth();
-                int cupTotalHeightPx = pairedCup.getTotalHeightPixels();
-                // Find where the cup's bottom is
-                int cupIndex = stack.indexOf(pairedCup);
-                if (cupIndex != -1) {
-                    int cupBottomY = ORIGIN_Y - getHeightUpTo(cupIndex) * PIXELS_PER_CM;
-                    lid.setPosition(ORIGIN_X, cupBottomY, cupWidth, cupTotalHeightPx);
-                }
-            } else {
-                // Lid is alone - position it independently
-                lid.setPositionAlone(ORIGIN_X, elementBottomY);
+                return;
+            }
+            // Unpaired lid: position independently
+            lid.setPositionAlone(x, y);
+            if (isVisible) {
+                lid.makeVisible();
             }
         }
     }
 
     /**
-     * Repositions all elements starting from a given index.
+     * Repositions all elements in the stack starting from the given index.
+     * This method is called after removing an element to ensure all remaining
+     * elements maintain correct visual positions and heights are recalculated.
+     *
+     * @param fromIndex the starting position for repositioning (typically the index
+     *                  where an element was removed)
      */
     private void repositionFrom(int fromIndex) {
-        for (int i = fromIndex; i < stack.size(); i++) {
-            positionElement(i);
-        }
+        // Reposition the entire stack to maintain consistency
+        repositionStack();
     }
 
+    /**
+     * Calculates the total height of all non-nested elements currently in the
+     * stack.
+     * Nested cups (those that fit inside a larger cup below them) are excluded
+     * from the height calculation. Lids contribute 1 centimeter each to the total.
+     *
+     * @return the total height in centimeters of all displayed elements
+     */
     public int height() {
         int total = 0;
-        for (Object element : stack) {
+        for (int i = 0; i < stack.size(); i++) {
+            Object element = stack.get(i);
             if (element instanceof Cup) {
-                total += ((Cup) element).getHeight();
+                Cup cup = (Cup) element;
+                // Skip cups that are nested inside the cup below them
+                if (isNestedInBelow(i))
+                    continue;
+                total += cup.getHeight();
             } else if (element instanceof Lid) {
+                // Lids always contribute 1cm to the height
                 total += ((Lid) element).getHeight();
             }
         }
         return total;
     }
+
+    /**
+     * Determines whether the element at the given index is a cup nested inside
+     * the cup immediately below it.
+     * A cup is considered nested when both the current element and the element
+     * below are cups, and the current cup has a smaller ID than the one below.
+     *
+     * @param index the index of the element to evaluate
+     * @return true if the current cup is nested inside the cup below, false
+     *         otherwise
+     */
+    private boolean isNestedInBelow(int index) {
+        if (index == 0)
+            return false;
+        Object below = stack.get(index - 1);
+        Object current = stack.get(index);
+        if (below instanceof Cup && current instanceof Cup) {
+            return ((Cup) current).getId() < ((Cup) below).getId();
+        }
+        return false;
+    }
+
+    /**
+     * Recalculates and updates the visual position of every element in the stack.
+     * Nested cups are placed on the inner base of the cup below and do not add
+     * to the external tower height. Non-nested elements increase the accumulated
+     * height used to position subsequent elements.
+     */
+    private void repositionStack() {
+        int heightPixels = 0;
+        int[] bottomPixels = new int[stack.size()];
+
+        for (int i = 0; i < stack.size(); i++) {
+            Object element = stack.get(i);
+
+            if (isNestedInBelow(i)) {
+                // Place nested element on the internal base of the cup below (1cm above)
+                int innerBottom = bottomPixels[i - 1] + PIXELS_PER_CM;
+                bottomPixels[i] = innerBottom;
+                positionElement(element, innerBottom);
+                // Nested elements do not increase the external tower height
+            } else {
+                bottomPixels[i] = heightPixels;
+                positionElement(element, heightPixels);
+                if (element instanceof Cup) {
+                    heightPixels += ((Cup) element).getHeight() * PIXELS_PER_CM;
+                } else if (element instanceof Lid) {
+                    heightPixels += ((Lid) element).getHeight() * PIXELS_PER_CM;
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes the lid with the given ID from the stack.
+     * If the lid is currently paired with a cup, the pairing is dissolved first.
+     * After removal, the remaining elements are repositioned.
+     * Sets {@code lastOperationOk} to true on success, false otherwise.
+     *
+     * @param i the lid ID to remove
+     */
+    public void removeLid(int i) {
+        // 1. Find the lid in the current stack
+        int index = findLidIndexInStack(i);
+        if (index == -1) {
+            reportError("Lid " + i + " is not in the stack.");
+            lastOperationOk = false;
+            return;
+        }
+
+        Lid lid = (Lid) stack.get(index);
+
+        // 2. Dissolve pairing if this lid is attached to a cup
+        if (lid.isPaired())
+            lid.unpair();
+
+        // 3. Remove the lid and update the remaining layout
+        lid.makeInvisible();
+        stack.remove(index);
+        lids.remove(lid);
+        repositionFrom(index);
+        lastOperationOk = true;
+    }
+
+    /**
+     * Finds the index of a lid in the stack by its ID.
+     * Iterates through the stack and returns the position of the first Lid whose
+     * number matches the given value.
+     *
+     * @param id the lid ID to search for
+     * @return the zero-based index of the lid in the stack, or -1 if not found
+     */
+    private int findLidIndexInStack(int id) {
+        for (int i = 0; i < stack.size(); i++) {
+            if (stack.get(i) instanceof Lid && ((Lid) stack.get(i)).getNumber() == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Reorganizes the stack from largest to smallest (largest at bottom, smallest
+     * at top).
+     * Only includes elements that fit within maxHeight.
+     * When a cup and its lid share the same id, the lid is placed on top of the
+     * cup.
+     */
+    public void orderTower() {
+        clearStack();
+        ArrayList<Cup> sorted = new ArrayList<>(cups);
+        sorted.sort((a, b) -> b.getId() - a.getId());
+        int accumulated = 0;
+        for (Cup cup : sorted) {
+            int needed = accumulated + cup.getHeight();
+            Lid matchingLid = findLidById(cup.getId());
+            if (matchingLid != null)
+                needed += matchingLid.getHeight();
+            if (needed <= maxHeight) {
+                stack.add(cup);
+                accumulated += cup.getHeight();
+                if (matchingLid != null) {
+                    if (!cup.isLidded())
+                        cup.pairWith(matchingLid);
+                    stack.add(matchingLid);
+                    accumulated += matchingLid.getHeight();
+                }
+
+            }
+            for (Lid lid : lids) {
+                if (!stack.contains(lid) && height() + lid.getHeight() <= maxHeight) {
+                    stack.add(lid);
+                }
+            }
+            repositionStack();
+            lastOperationOk = true;
+        }
+    }
+
+    /**
+     * Reorganizes the stack in reverse order (smallest at bottom, largest at top).
+     * Only includes elements that fit within maxHeight.
+     */
+    public void reverseTower() {
+        clearStack();
+        ArrayList<Cup> sorted = new ArrayList<>(cups);
+        sorted.sort((a, b) -> a.getId() - b.getId());
+        int accumulated = 0;
+        for (Cup cup : sorted) {
+            int needed = accumulated + cup.getHeight();
+            Lid matchingLid = findLidById(cup.getId());
+            if (matchingLid != null)
+                needed += matchingLid.getHeight();
+            if (needed <= maxHeight) {
+                stack.add(cup);
+                accumulated += cup.getHeight();
+                if (matchingLid != null) {
+                    if (!cup.isLidded())
+                        cup.pairWith(matchingLid);
+                    stack.add(matchingLid);
+                    accumulated += matchingLid.getHeight();
+                }
+            }
+        }
+        for (Lid lid : lids) {
+            if (!stack.contains(lid) && height() + lid.getHeight() <= maxHeight) {
+                stack.add(lid);
+            }
+        }
+        repositionStack();
+        lastOperationOk = true;
+    }
+
+    /**
+     * Returns the ids of all cups currently paired with their lid, sorted
+     * ascending.
+     * 
+     * @return int array of lidded cup ids
+     */
+    public int[] lidedCups() {
+        ArrayList<Integer> result = new ArrayList<>();
+        for (Cup cup : cups) {
+            if (cup.isLidded())
+                result.add(cup.getId());
+        }
+        result.sort(Integer::compareTo);
+        return result.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /**
+     * Returns the type and number of each element in the stack from bottom to top.
+     * Example: {{"cup","4"},{"lid","4"}}
+     * 
+     * @return 2D String array with [type, id] for each element
+     */
+    public String[][] stackingItems() {
+        String[][] result = new String[stack.size()][2];
+        for (int i = 0; i < stack.size(); i++) {
+            Object element = stack.get(i);
+            if (element instanceof Cup) {
+                result[i][0] = "cup";
+                result[i][1] = String.valueOf(((Cup) element).getId());
+            } else if (element instanceof Lid) {
+                result[i][0] = "lid";
+                result[i][1] = String.valueOf(((Lid) element).getNumber());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Makes the tower and all its elements visible.
+     */
+    public void makeVisible() {
+        isVisible = true;
+        frame.makeVisible();
+        for (Rectangle tick : ticks)
+            tick.makeVisible();
+        for (Object element : stack) {
+            if (element instanceof Cup)
+                ((Cup) element).makeVisible();
+            else if (element instanceof Lid)
+                ((Lid) element).makeVisible();
+        }
+    }
+
+    /**
+     * Makes the tower and all its elements invisible.
+     */
+    public void makeInvisible() {
+        isVisible = false;
+        frame.makeInvisible();
+        for (Rectangle tick : ticks)
+            tick.makeInvisible();
+        for (Object element : stack) {
+            if (element instanceof Cup)
+                ((Cup) element).makeInvisible();
+            else if (element instanceof Lid)
+                ((Lid) element).makeInvisible();
+        }
+    }
+
+    /**
+     * Terminates the simulator.
+     */
+    public void exit() {
+        makeInvisible();
+        System.exit(0);
+    }
+
+    /**
+     * Returns whether the last operation was successful.
+     * 
+     * @return true if the last operation completed without errors
+     */
+    public boolean ok() {
+        return lastOperationOk;
+    }
+
+    /**
+     * Clears all elements from the stack visually and resets pairings.
+     * The cups and lids lists are preserved for reorganization.
+     */
+    private void clearStack() {
+        for (Object element : stack) {
+            if (element instanceof Cup)
+                ((Cup) element).makeInvisible();
+            else if (element instanceof Lid)
+                ((Lid) element).makeInvisible();
+        }
+        stack.clear();
+        for (Cup cup : cups) {
+            if (cup.isLidded())
+                cup.unpair();
+        }
+    }
+
+    private Cup findCupById(int id) {
+        for (Cup cup : cups) {
+            if (cup.getId() == id)
+                return cup;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a lid in the lids list by its id number.
+     * 
+     * @param id the lid id to search for
+     * @return the Lid, or null if not found
+     */
+    private Lid findLidById(int id) {
+        for (Lid lid : lids) {
+            if (lid.getNumber() == id)
+                return lid;
+        }
+        return null;
+    }
+
 }
