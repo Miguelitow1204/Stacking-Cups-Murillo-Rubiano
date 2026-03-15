@@ -1,0 +1,35 @@
+Ciclo2
+MURILLO-RUBIANO
+FLUJO DE TRABAJO DE SawpToReduce
+
+swapToReduce -> PRINCIPAL
+1. Mide la altura actual de la torre con height().
+2. Itera todos los pares posibles (i, j) del stack.
+3.Para cada par llama a heightAfterSwap(i, j) — si esa altura hipotética es menor que la actual, guarda ese par como suggestion y sale de los loops.
+4. Si no encontró ningún par que reduzca → retorna null.
+5.Si encontró una sugerencia, revisa isVisible:
+
+	Invisible → aplica el swap directamente llamando a swap().
+	Visible → muestra un JOptionPane.showConfirmDialog con la sugerencia. Si el usuario confirma → llama a swap(). Si 	rechaza → no hace nada.
+6.En ambos casos retorna la sugerencia String[][].
+
+
+
+heightAfterSwap(i, j) — helper de cálculo --> APOYO
+
+1.Hace el swap de los elementos en posiciones i y j directamente en el ArrayList, sin tocar nada visual.
+2.Llama a height() para medir la altura hipotética.
+3.Deshace el swap dejando el stack exactamente como estaba.
+4.Retorna la altura hipotética.
+
+
+describeElement(index) — helper de descripción --> APOYO
+
+1.Toma el elemento en la posición index del stack.
+2.Si es un Cup → retorna {"cup", "4"}.
+3.Si es un Lid → retorna {"lid", "4"}
+
+La clave del diseño es que heightAfterSwap nunca modifica la visualización — solo juega con el orden del ArrayList en memoria y lo restaura, por eso es seguro llamarlo en un loop sin efectos secundarios. Y cuando finalmente se confirma el swap, es swap() quien se encarga de todo, incluyendo el reposicionamiento visual con repositionStack().
+
+
+

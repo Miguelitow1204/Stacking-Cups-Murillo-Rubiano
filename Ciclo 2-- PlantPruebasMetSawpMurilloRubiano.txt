@@ -1,0 +1,18 @@
+Ciclo 2-- Planteamiento de las pruebas de los métodos de ciclo 2
+MURILLO-RUBIANO
+ Método sawp
+
+¿Qué debería hacer?
+
+1.Intercambiar correctamente la posición de dos tazas en el stack.
+2.Intercambiar correctamente la posición de dos tapas en el stack.
+3.Intercambiar correctamente una taza con una tapa.
+4.Retornar ok() true después de un swap exitoso.
+5.Reposicionar visualmente los elementos después del swap.
+
+¿Qué NO debería hacer?
+1.No debe hacer nada si alguno de los dos objetos no existe en el stack.
+2.No debe hacer nada si el input es null o tiene formato inválido.
+3.No debe dejar el stack con más o menos elementos de los que tenía.
+4.No debe modificar los IDs ni los tipos de los elementos al intercambiarlos.
+5.No debe retornar ok() true si el swap falló.

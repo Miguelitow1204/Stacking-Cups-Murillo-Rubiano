@@ -1,0 +1,45 @@
+Ciclo 2-- Planteamiento de las pruebas de los métodos de ciclo 2
+MURILLO-RUBIANO
+ Nuevo constructor Tower
+
+¿Qué debería hacer?
+
+1.Crear exactamente n tazas con IDs del 1 al n.
+Prueba diseñada: (accordingMRShouldCreateExactlyNCups — verifica que se crean exactamente n tazas.)
+
+2.Calcular correctamente la altura máxima: 2^n - 1.
+3.La altura de la torre después de construirla debe ser igual a 2^n - 1.
+
+prueba diseñada:(accordingMRShouldCalculateCorrectMaxHeight — verifica que la altura es 2^n - 1.)
+esta prueba verifica 2 en 1.
+Que la altura real apilada sea 2^(n-1) = 8 — es decir, solo la taza más grande cuenta porque las demás quedan anidadas.
+Que esa altura se mantenga dentro del maxHeight = 2^n - 1 = 15.
+
+4.Las tazas deben quedar apiladas de mayor a menor (la de mayor ID en el fondo).
+prueba diseñada: (accordingMRShouldStackCupsLargestAtBottom — verifica el orden correcto de apilamiento.)
+
+5.ok() debe retornar true después de la construcción.
+prueba diseñada:(accordingMRShouldReturnOkAfterConstruction — verifica que ok() retorna true.)
+
+6.No debe crear ninguna tapa.
+prueba diseñada:(accordingMRShouldNotCreateAnyLids — verifica que no hay tapas creadas.)
+
+¿Qué NO debería hacer?
+
+1.No debe crear tazas con IDs fuera del rango 1 a n.
+prueba diseñada:(accordingMRShouldNotCreateCupsOutsideRange — verifica que los IDs están entre 1 y n.)
+
+2.No debe crear tapas.
+(prueba que lo cubre: accordingMRShouldNotCreateAnyLids)
+
+3.No debe superar la altura máxima calculada.
+
+4.No debe dejar el stack vacío.
+(prueba diseñada:accordingMRShouldNotLeaveStackEmpty — verifica que el stack no queda vacío.)
+
+5.No debe apilar las tazas en orden inverso (menor abajo, mayor arriba).
+pruebas diseñadas:
+
+(accordingMRShouldStackCupsLargestAtBottom — verifica el orden correcto de apilamiento.)
+
+(accordingMRShouldNotStackSmallestAtBottom — si por algún error las tazas se apilan en orden inverso (menor abajo), este test lo detecta.)

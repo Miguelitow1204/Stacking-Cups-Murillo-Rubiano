@@ -893,57 +893,60 @@ public class Tower {
         }
         return null;
     }
-    
-    //Segundo Ciclo
-    //Requisitos Funcionales
-    //10. Create Extensión
+
+    // Ciclo #2
+    // Requisitos Funcionales
+    // 10. Create Extensión
     /**
      * Creates a new tower with the specified number of cups.
-     * This constructor automatically generates cups with IDs from 1 to the given number.
-     * The tower is created with default width and calculates the required maximum height
+     * This constructor automatically generates cups with IDs from 1 to the given
+     * number.
+     * The tower is created with default width and calculates the required maximum
+     * height
      * to fit all cups when they are stacked in order (largest at bottom)
      * No lids are created in this constructor
+     * 
      * @param cups
      */
-    public Tower(int cups){
-        //Calcular la altura que se necesita: sumar 2^0 + 2^1 + ... + 2^(cups-1)
+    public Tower(int cups) {
+        // Calcular la altura que se necesita: sumar 2^0 + 2^1 + ... + 2^(cups-1)
         int requiredHeight = (int) Math.pow(2, cups) - 1;
-        
-        //Usar ancho por defecto
+
+        // Usar ancho por defecto
         this.width = 10;
         this.maxHeight = requiredHeight;
         this.isVisible = true;
         this.lastOperationOk = true;
-        
+
         this.cups = new ArrayList<>();
         this.lids = new ArrayList<>();
         this.stack = new ArrayList<>();
         this.ticks = new ArrayList<>();
-        
+
         buildFrame();
         buildTicks();
-        
-        //Crear cups de 1 a cups y añadirlos a stack
-        //Añadir en orden de cups a 1
-        for(int i = cups; i >= 1; i--){
+
+        // Crear cups de 1 a cups y añadirlos a stack
+        // Añadir en orden de cups a 1
+        for (int i = cups; i >= 1; i--) {
             Cup newCup = new Cup(i);
             this.cups.add(newCup);
             this.stack.add(newCup);
         }
-        
-        //Posicionar todas las cups
+
+        // Posicionar todas las cups
         repositionStack();
-        
-        //Hacerlas visibles
-        if(isVisible){
-            for(Cup cup: this.cups){
+
+        // Hacerlas visibles
+        if (isVisible) {
+            for (Cup cup : this.cups) {
                 cup.makeVisible();
             }
         }
         lastOperationOk = true;
     }
-    
-    //Requisitos 11 y 12. Reorganize
+
+    // Requisitos 11 y 12. Reorganize
     /**
      * Automatically pairs all cups with their matching lid in the tower.
      * For each cup in tower, if a lid with the same number exists,
@@ -951,25 +954,25 @@ public class Tower {
      * Only cups and lids that are not already paired will be matched
      * Sets lastOperationOk to true when complete.
      */
-    public void cover(){
-        //Iterar sobre todas las cups en tower
-        for(Cup cup: cups){
-            //Skip si ya está lidded
-            if(cup.isLidded()){
+    public void cover() {
+        // Iterar sobre todas las cups en tower
+        for (Cup cup : cups) {
+            // Skip si ya está lidded
+            if (cup.isLidded()) {
                 continue;
             }
-            //Buscar una lid que coincida con el mismo numero
+            // Buscar una lid que coincida con el mismo numero
             Lid matchingLid = findLidById(cup.getId());
             // Si existe una lid compatible y no esta emparejada
-            if(matchingLid != null && !matchingLid.isPaired()){
+            if (matchingLid != null && !matchingLid.isPaired()) {
                 cup.pairWith(matchingLid);
             }
         }
-        
+
         repositionStack();
         lastOperationOk = true;
     }
-    
+
     /**
      * Swaps the positions of two objects in the stack
      * Objects are indentified by their type and number
@@ -979,40 +982,41 @@ public class Tower {
      * @param o1 Array with [type, number] of first object
      * @param o2 Array with [type, number] of second object
      */
-    public void swap(String[] o1, String[] o2){
+    public void swap(String[] o1, String[] o2) {
         lastOperationOk = false;
-        //Validar input
-        if(o1 == null || o1.length != 2 || o2 == null || o2.length != 2){
+        // Validar input
+        if (o1 == null || o1.length != 2 || o2 == null || o2.length != 2) {
             reportError("Invalid object format");
             return;
         }
-        //Encontrar los indices de ambos objetos
-        int index1 = findObjectInStack(o1[0], o1[1]); //Este toca hacerlo private
+        // Encontrar los indices de ambos objetos
+        int index1 = findObjectInStack(o1[0], o1[1]); // Este toca hacerlo private
         int index2 = findObjectInStack(o2[0], o2[1]);
-        
-        //Validar que los objetos existan
-        if(index1 == -1){
+
+        // Validar que los objetos existan
+        if (index1 == -1) {
             reportError("Object" + o1[0] + "#" + o1[1] + "not found");
             return;
         }
-        if(index2 == -1){
+        if (index2 == -1) {
             reportError("Object" + o2[0] + "#" + o2[1] + "not found");
             return;
         }
-        
-        //Cambiar los objetos
+
+        // Cambiar los objetos
         Object temp = stack.get(index1);
         stack.set(index1, stack.get(index2));
         stack.set(index2, temp);
-        
-        //Reposicionar
+
+        // Reposicionar
         repositionStack();
         lastOperationOk = true;
     }
+
     /**
      * Finds the index of an object in the stack by its type and number.
      * 
-     * @param type "cup" or "lid"
+     * @param type      "cup" or "lid"
      * @param numberStr the number as a String
      * @return the index in the stack, or -1 if not found
      */
@@ -1028,11 +1032,11 @@ public class Tower {
                 return -1;
             }
         }
-    
+
         // Search in stack
         for (int i = 0; i < stack.size(); i++) {
             Object element = stack.get(i);
-        
+
             // Check if it's a cup with matching number
             if (type.equals("cup") && element instanceof Cup) {
                 Cup cup = (Cup) element;
@@ -1040,7 +1044,7 @@ public class Tower {
                     return i;
                 }
             }
-        
+
             // Check if it's a lid with matching number
             if (type.equals("lid") && element instanceof Lid) {
                 Lid lid = (Lid) element;
@@ -1049,7 +1053,90 @@ public class Tower {
                 }
             }
         }
-    
+
         return -1;
+    }
+
+    /**
+     * Suggests a swap of two elements that would reduce the tower height.
+     * Tries all possible pairs and returns the first one that decreases height.
+     * If the simulator is visible, asks the user for confirmation before applying
+     * the swap. If invisible, applies the swap directly without prompting.
+     * Elements are identified by their type and number.
+     * Example return value: {{"cup","4"},{"lid","4"}}
+     *
+     * @return a 2-element String[][] with the suggested swap,
+     *         or null if no height-reducing swap exists
+     */
+    public String[][] swapToReduce() {
+        int currentHeight = height();
+        String[][] suggestion = null;
+
+        // First-improvement strategy: stop at the first swap that lowers height.
+        for (int i = 0; i < stack.size() - 1 && suggestion == null; i++) {
+            for (int j = i + 1; j < stack.size() && suggestion == null; j++) {
+                if (heightAfterSwap(i, j) < currentHeight) {
+                    suggestion = new String[][] { describeElement(i), describeElement(j) };
+                }
+            }
+        }
+
+        if (suggestion == null) {
+            return null;
+        }
+
+        if (!isVisible) {
+            swap(suggestion[0], suggestion[1]);
+        } else {
+            String message = "Suggested swap to reduce height:\n"
+                    + suggestion[0][0] + " " + suggestion[0][1]
+                    + "  <->  "
+                    + suggestion[1][0] + " " + suggestion[1][1]
+                    + "\nDo you want to apply this swap?";
+            int choice = javax.swing.JOptionPane.showConfirmDialog(
+                    null, message, "Swap to Reduce", javax.swing.JOptionPane.YES_NO_OPTION);
+            if (choice == javax.swing.JOptionPane.YES_OPTION) {
+                swap(suggestion[0], suggestion[1]);
+            }
+        }
+
+        return suggestion;
+    }
+
+    /**
+     * Calculates the tower height if the elements at positions i and j were
+     * swapped.
+     * Performs the swap in memory, measures height, then restores the original
+     * order.
+     * The visual representation is not affected.
+     *
+     * @param i index of the first element
+     * @param j index of the second element
+     * @return the hypothetical height after the swap
+     */
+    private int heightAfterSwap(int i, int j) {
+        Object temp = stack.get(i);
+        stack.set(i, stack.get(j));
+        stack.set(j, temp);
+        int h = height();
+        temp = stack.get(i);
+        stack.set(i, stack.get(j));
+        stack.set(j, temp);
+        return h;
+    }
+
+    /**
+     * Returns a String array describing the element at the given stack index.
+     * Format: {"cup", "4"} or {"lid", "4"}
+     *
+     * @param index the position in the stack
+     * @return String[] with type and number of the element
+     */
+    private String[] describeElement(int index) {
+        Object el = stack.get(index);
+        if (el instanceof Cup) {
+            return new String[] { "cup", String.valueOf(((Cup) el).getId()) };
+        }
+        return new String[] { "lid", String.valueOf(((Lid) el).getNumber()) };
     }
 }
