@@ -844,8 +844,12 @@ public class Tower {
     }
 
     /**
-     * Clears all elements from the stack visually and resets pairings.
-     * The cups and lids lists are preserved for reorganization.
+     * Clears the current visual stack and resets cup-lid relationships.
+     * <p>
+     * Every stacked element is made invisible and removed from {@code stack},
+     * but the master collections {@code cups} and {@code lids} are kept so the
+     * tower can be rebuilt later (for example, in ordering operations).
+     * </p>
      */
     private void clearStack() {
         for (Object element : stack) {
@@ -856,11 +860,18 @@ public class Tower {
         }
         stack.clear();
         for (Cup cup : cups) {
+            // Ensure no stale references to lids after clearing the visual stack.
             if (cup.isLidded())
                 cup.unpair();
         }
     }
 
+    /**
+     * Finds and returns a cup by its identifier from the registered cups list.
+     *
+     * @param id the cup ID to search for
+     * @return the matching {@code Cup}, or {@code null} if no cup has that ID
+     */
     private Cup findCupById(int id) {
         for (Cup cup : cups) {
             if (cup.getId() == id)
