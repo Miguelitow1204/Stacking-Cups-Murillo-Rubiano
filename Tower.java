@@ -560,29 +560,46 @@ public class Tower {
     }
 
     /**
-     * Calculates the total height of all non-nested elements currently in the
-     * stack.
-     * Nested cups (those that fit inside a larger cup below them) are excluded
-     * from the height calculation. Lids contribute 1 centimeter each to the total.
-     *
-     * @return the total height in centimeters of all displayed elements
+     * Calculates total height considering nested cups that stack vertically.
      */
     public int height() {
-        int total = 0;
+        if (stack.isEmpty()) return 0;
+
+        int[] topCm = new int[stack.size()];
+
         for (int i = 0; i < stack.size(); i++) {
             Object element = stack.get(i);
+
             if (element instanceof Cup) {
                 Cup cup = (Cup) element;
-                // Skip cups that are nested inside the cup below them
-                if (isNestedInBelow(i))
-                    continue;
-                total += cup.getHeight();
+                // Buscar el contenedor directo: el más pequeño que pueda contenerla
+                int containerIdx = findSmallestContainer(i);
+
+                if (containerIdx == -1) {
+                    // No está anidada: se apila sobre el tope anterior
+                    int base = (i == 0) ? 0 : topCm[i - 1];
+                    topCm[i] = base + cup.getHeight();
+                } else {
+                    // Está anidada: su base es 1cm (fondo del contenedor) más
+                    // el tope de cualquier otra copa ya apilada dentro del mismo contenedor
+                    int base = topCm[containerIdx] - ((Cup) stack.get(containerIdx)).getHeight() + 1;
+                    for (int j = containerIdx + 1; j < i; j++) {
+                        if (stack.get(j) instanceof Cup && findSmallestContainer(j) == containerIdx) {
+                            base = Math.max(base, topCm[j]);
+                        }
+                    }
+                    topCm[i] = base + cup.getHeight();
+                }
+
             } else if (element instanceof Lid) {
-                // Lids always contribute 1cm to the height
-                total += ((Lid) element).getHeight();
+                int prev = (i == 0) ? 0 : topCm[i - 1];
+                topCm[i] = prev + 1;
             }
         }
-        return total;
+
+        int max = 0;
+        for (int t : topCm) max = Math.max(max, t);
+        return max;
     }
 
     /**
@@ -608,35 +625,87 @@ public class Tower {
 
     /**
      * Recalculates and updates the visual position of every element in the stack.
-     * Nested cups are placed on the inner base of the cup below and do not add
-     * to the external tower height. Non-nested elements increase the accumulated
-     * height used to position subsequent elements.
+     * 
+     * UPDATED LOGIC for ICPC problem:
+     * - A cup nests inside the SMALLEST cup below it that can contain it
+     * - If multiple cups nest in the same container, they stack vertically
+     * - Height is measured from the bottom to the highest point
      */
     private void repositionStack() {
-        int heightPixels = 0;
-        int[] bottomPixels = new int[stack.size()];
+        if (stack.isEmpty()) return;
+
+        int[] bottomPx = new int[stack.size()];
+        int[] topPx    = new int[stack.size()];
 
         for (int i = 0; i < stack.size(); i++) {
             Object element = stack.get(i);
 
-            if (isNestedInBelow(i)) {
-                // Place nested element on the internal base of the cup below (1cm above)
-                int innerBottom = bottomPixels[i - 1] + PIXELS_PER_CM;
-                bottomPixels[i] = innerBottom;
-                positionElement(element, innerBottom);
-                // Nested elements do not increase the external tower height
-            } else {
-                bottomPixels[i] = heightPixels;
-                positionElement(element, heightPixels);
-                if (element instanceof Cup) {
-                    heightPixels += ((Cup) element).getHeight() * PIXELS_PER_CM;
-                } else if (element instanceof Lid) {
-                    heightPixels += ((Lid) element).getHeight() * PIXELS_PER_CM;
+            if (element instanceof Cup) {
+                Cup cup = (Cup) element;
+                int cupHeightPx  = cup.getHeight() * PIXELS_PER_CM;
+                int containerIdx = findSmallestContainer(i);
+
+                if (containerIdx == -1) {
+                    // Not nested: place on top of the previous element
+                    int base    = (i == 0) ? 0 : topPx[i - 1];
+                    bottomPx[i] = base;
+                    topPx[i]    = base + cupHeightPx;
+                } else {
+                    // Nested: start 1 cm (PIXELS_PER_CM) above container floor
+                    int base = bottomPx[containerIdx] + PIXELS_PER_CM;
+
+                    // Raise base if sibling cups already occupy space inside
+                    // the same direct container
+                    for (int j = containerIdx + 1; j < i; j++) {
+                        if (stack.get(j) instanceof Cup
+                                && findSmallestContainer(j) == containerIdx) {
+                            base = Math.max(base, topPx[j]);
+                        }
+                    }
+                    bottomPx[i] = base;
+                    topPx[i]    = base + cupHeightPx;
                 }
+
+                positionElement(element, bottomPx[i]);
+
+            } else if (element instanceof Lid) {
+                // Lids always sit on top of the previous element
+                int prev    = (i == 0) ? 0 : topPx[i - 1];
+                bottomPx[i] = prev;
+                topPx[i]    = prev + PIXELS_PER_CM;
+                positionElement(element, bottomPx[i]);
             }
         }
     }
 
+    /**
+     * Finds the direct container for the cup at the given stack index.
+     * Walks backwards and returns the first cup with a larger ID.
+     * If the first cup found has a smaller or equal ID, there is no container.
+     *
+     * @param cupIndex index of the cup to find a container for
+     * @return index of the direct container, or -1 if none
+     */
+    private int findSmallestContainer(int cupIndex) {
+        if (!(stack.get(cupIndex) instanceof Cup)) return -1;
+
+        Cup currentCup = (Cup) stack.get(cupIndex);
+
+        for (int i = cupIndex - 1; i >= 0; i--) {
+            if (stack.get(i) instanceof Cup) {
+                Cup candidate = (Cup) stack.get(i);
+                if (candidate.getId() > currentCup.getId()) {
+                    // Primera copa hacia atrás con ID mayor = contenedor directo
+                    return i;
+                } else {
+                    // Primera copa hacia atrás con ID menor o igual = no hay contenedor
+                    return -1;
+                }
+            }
+        }
+        return -1;
+    }
+    
     /**
      * Removes the lid with the given ID from the stack.
      * If the lid is currently paired with a cup, the pairing is dissolved first.

@@ -254,7 +254,7 @@ public class Cup {
      * @return The calculated height
      */
     private int calculateHeight(int id) {
-        return (int) 2 * id - 1;
+        return 2 * id - 1;
     }
 
     /**
