@@ -1,0 +1,27 @@
+#BlueJ class context
+comment0.target=TowerContest
+comment0.text=\r\n\ TowerContest\ -\ Solver\ for\ the\ ICPC\ Stacking\ Cups\ problem.\r\n\ \r\n\ Uses\ a\ greedy\ approach\ with\ subset\ sum\ to\ find\ exact\ height.\r\n\ \r\n\ @author\ (Murillo-Rubiano)\r\n\ @version\ (3.1)\r\n
+comment1.params=n\ h
+comment1.target=java.lang.String\ solve(int,\ long)
+comment1.text=\r\n\ Solves\ the\ ICPC\ Stacking\ Cups\ problem.\r\n\ \r\n\ @param\ n\ number\ of\ cups\ (1\ to\ n)\r\n\ @param\ h\ target\ height\ in\ centimeters\r\n\ @return\ String\ with\ cup\ heights\ in\ order,\ or\ "impossible"\r\n
+comment2.params=n
+comment2.target=java.lang.String\ allNested(int)
+comment2.text=\r\n\ Returns\ ordering\ for\ all\ cups\ nested\ (height\ \=\ largest\ cup\ only).\r\n
+comment3.params=n
+comment3.target=java.lang.String\ allStacked(int)
+comment3.text=\r\n\ Returns\ ordering\ for\ all\ cups\ stacked\ (height\ \=\ sum\ of\ all).\r\n
+comment4.params=cups\ target
+comment4.target=java.util.List\ findSubsetSum(java.util.List,\ long)
+comment4.text=\r\n\ Finds\ a\ subset\ of\ cups\ whose\ heights\ sum\ to\ exactly\ target.\r\n\ Uses\ simple\ backtracking\ (efficient\ for\ small\ n).\r\n\ \r\n\ @param\ cups\ list\ of\ cup\ IDs\ available\r\n\ @param\ target\ target\ sum\r\n\ @return\ list\ of\ cup\ IDs\ that\ sum\ to\ target,\ or\ null\ if\ impossible\r\n
+comment5.params=cups\ index\ remaining\ current
+comment5.target=boolean\ findSubsetHelper(java.util.List,\ int,\ long,\ java.util.List)
+comment6.params=n\ contributors
+comment6.target=java.lang.String\ buildOrdering(int,\ java.util.List)
+comment6.text=\r\n\ Builds\ the\ final\ ordering\ given\ which\ cups\ contribute\ to\ height.\r\n\ \r\n\ Strategy\:\r\n\ 1.\ Place\ largest\ cup\ first\ (Cup\ n)\r\n\ 2.\ Nest\ all\ non-contributing\ cups\ inside\ it\ (decreasing\ order)\r\n\ 3.\ Stack\ contributing\ cups\ on\ top\ (increasing\ order\ for\ max\ nesting)\r\n\ \r\n\ @param\ n\ total\ cups\r\n\ @param\ contributors\ cups\ that\ add\ to\ height\r\n\ @return\ ordering\ string\r\n
+comment7.params=order
+comment7.target=java.lang.String\ orderToString(java.util.List)
+comment7.text=\r\n\ Converts\ ordering\ to\ output\ format.\r\n
+comment8.params=n\ h
+comment8.target=void\ simulate(int,\ int)
+comment8.text=\r\n\ Simulates\ the\ solution\ visually.\r\n
+numComments=9

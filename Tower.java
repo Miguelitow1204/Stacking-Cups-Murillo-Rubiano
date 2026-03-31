@@ -587,10 +587,10 @@ public class Tower {
 
     /**
      * Determines whether the element at the given index is a cup nested inside
-     * the cup immediately below it.
-     * A cup is considered nested when both the current element and the element
-     * below are cups, and the current cup has a smaller ID than the one below.
-     *
+     * any larger cup below it.
+     * A cup is considered nested when it can fit inside any larger cup
+     * that appears earlier in the stack.
+     * 
      * @param index the index of the element to evaluate
      * @return true if the current cup is nested inside the cup below, false
      *         otherwise
@@ -909,8 +909,9 @@ public class Tower {
      * @param cups
      */
     public Tower(int cups) {
-        // Calcular la altura que se necesita: sumar 2^0 + 2^1 + ... + 2^(cups-1)
-        int requiredHeight = (int) Math.pow(2, cups) - 1;
+        //When cups are nested, only the largest one determines the height
+        //Largest cup has height 2*cups - 1
+        int requiredHeight = 2 * cups - 1;
 
         // Usar ancho por defecto
         this.width = 10;
