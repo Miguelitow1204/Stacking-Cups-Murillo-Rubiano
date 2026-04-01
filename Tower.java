@@ -560,7 +560,14 @@ public class Tower {
     }
 
     /**
-     * Calculates total height considering nested cups that stack vertically.
+     * Calculates the total height of the stack.
+     * 
+     * This method goes through all the elements in the stack and determines
+     * how much height each one contributes. Cups can either stack on top
+     * of others or be placed inside another cup (nested), which changes
+     * how their height is counted. Lids always add a fixed height.
+     * 
+     * @return the total height of the stack in centimeters
      */
     public int height() {
         if (stack.isEmpty()) return 0;
@@ -576,12 +583,12 @@ public class Tower {
                 int containerIdx = findSmallestContainer(i);
 
                 if (containerIdx == -1) {
-                    // No está anidada: se apila sobre el tope anterior
+                    //No está anidada: se apila sobre el tope anterior
                     int base = (i == 0) ? 0 : topCm[i - 1];
                     topCm[i] = base + cup.getHeight();
                 } else {
-                    // Está anidada: su base es 1cm (fondo del contenedor) más
-                    // el tope de cualquier otra copa ya apilada dentro del mismo contenedor
+                    //Está anidada: su base es 1cm (fondo del contenedor) más
+                    //el tope de cualquier otra copa ya apilada dentro del mismo contenedor
                     int base = topCm[containerIdx] - ((Cup) stack.get(containerIdx)).getHeight() + 1;
                     for (int j = containerIdx + 1; j < i; j++) {
                         if (stack.get(j) instanceof Cup && findSmallestContainer(j) == containerIdx) {
@@ -914,11 +921,11 @@ public class Tower {
 
     /**
      * Clears the current visual stack and resets cup-lid relationships.
-     * <p>
+     * 
      * Every stacked element is made invisible and removed from {@code stack},
      * but the master collections {@code cups} and {@code lids} are kept so the
      * tower can be rebuilt later (for example, in ordering operations).
-     * </p>
+     * 
      */
     private void clearStack() {
         for (Object element : stack) {
