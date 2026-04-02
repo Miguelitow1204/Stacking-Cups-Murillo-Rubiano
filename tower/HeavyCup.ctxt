@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=HeavyCup
+comment0.text=\r\n\ The\ cup\ proposal,\ a\ heavy\ cup\ that\ cannot\ be\ moved\ easily\r\n\ \r\n\ @author\ (Murillo-Rubiano)\ \r\n\ @version\ (1.0)\r\n
+comment1.params=idNumC
+comment1.target=HeavyCup(int)
+comment1.text=\r\n\ Creates\ a\ heavy\ cup\ with\ the\ given\ ID.\r\n\ @param\ idNumC\ the\ cup\ identifier\r\n
+comment2.params=tower
+comment2.target=boolean\ canEnterTower(Tower)
+comment3.params=tower
+comment3.target=void\ onPush(Tower)
+comment4.params=tower
+comment4.target=boolean\ canBeRemoved(Tower)
+numComments=5

@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=HierarchicalCup
+comment0.text=\r\n\ Upon\ entering\ the\ tower,\ it\ displaces\ all\ the\ smaller\ objects,\ \r\n\ and\ if\ it\ manages\ to\ reach\ the\ bottom\ of\ the\ tower,\ it\ cannot\ be\ removed\r\n\ \r\n\ @author\ (Murillo-Rubiano)\ \r\n\ @version\ (1.0)\r\n
+comment1.params=idNumC
+comment1.target=HierarchicalCup(int)
+comment1.text=\r\n\ Creates\ a\ hierarchical\ cup\ with\ the\ given\ ID.\r\n\ @param\ idNumC\ the\ cup\ identifier\r\n
+comment2.params=tower
+comment2.target=boolean\ canEnterTower(Tower)
+comment3.params=tower
+comment3.target=void\ onPush(Tower)
+comment4.params=tower
+comment4.target=boolean\ canBeRemoved(Tower)
+numComments=5

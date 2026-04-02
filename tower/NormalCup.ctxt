@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=NormalCup
+comment0.text=\r\n\ The\ normal\ cup\ used\ for\ the\ simulator\r\n\ The\ base\ of\ the\ cup\ is\ 1\ cm\r\n\ \r\n\ @author\ (Murillo-Rubiano)\r\n\ @version\ (1.0)\r\n
+comment1.params=idNumC
+comment1.target=NormalCup(int)
+comment1.text=\r\n\ Creates\ a\ normal\ cup\ with\ the\ given\ ID.\r\n\ @param\ idNumC\ the\ cup\ identifier\r\n
+comment2.params=tower
+comment2.target=boolean\ canEnterTower(Tower)
+comment3.params=tower
+comment3.target=void\ onPush(Tower)
+comment4.params=tower
+comment4.target=boolean\ canBeRemoved(Tower)
+numComments=5

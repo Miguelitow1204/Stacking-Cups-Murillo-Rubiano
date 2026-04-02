@@ -1,0 +1,16 @@
+#BlueJ class context
+comment0.target=FearfulLid
+comment0.text=\r\n\ A\ fearful\ lid\ that\ only\ enters\ if\ its\ cup\ is\ in\ the\ tower.\r\n\ and\ does\ not\ leave\ if\ it\ is\ currently\ lidding\ its\ cup\ \r\n\ \r\n\ @author\ (Murillo-Rubiano)\ \r\n\ @version\ (1.0)\r\n
+comment1.params=number
+comment1.target=FearfulLid(int)
+comment1.text=\r\n\ Creates\ a\ fearful\ lid\ with\ the\ given\ ID.\r\n\ @param\ number\ the\ lid\ identifier\r\n
+comment2.params=number\ color
+comment2.target=FearfulLid(int,\ java.lang.String)
+comment2.text=\r\n\ Creates\ a\ fearful\ lid\ with\ the\ given\ ID\ and\ color.\r\n\ @param\ number\ the\ lid\ identifier\r\n\ @param\ color\ \ the\ color\ inherited\ from\ its\ companion\ cup\r\n
+comment3.params=tower
+comment3.target=boolean\ canEnterTower(Tower)
+comment4.params=tower
+comment4.target=void\ onPush(Tower)
+comment5.params=tower
+comment5.target=boolean\ canBeRemoved(Tower)
+numComments=6

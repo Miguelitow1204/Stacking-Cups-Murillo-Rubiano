@@ -1,0 +1,28 @@
+#BlueJ class context
+comment0.target=TowerContest
+comment0.text=\r\n\ TowerContest\ -\ Solver\ for\ the\ ICPC\ 2025\ "Stacking\ Cups"\ problem.\r\n\r\n\ Finds\ an\ ordering\ of\ n\ cups\ (cup\ i\ has\ height\ 2i-1)\ such\ that\ the\ tower\r\n\ reaches\ exactly\ h\ cm,\ or\ reports\ "impossible".\r\n\r\n\ Min\ height\ \=\ 2n-1\ (all\ nested).\ Max\ height\ \=\ n\u00B2\ (all\ stacked).\r\n\ General\ case\:\ pull\ a\ subset\ of\ cups\ out\ of\ the\ main\ container\ so\ that\r\n\ their\ combined\ extra\ contribution\ equals\ (h\ -\ minHeight).\r\n\r\n\ @author\ Murillo-Rubiano\r\n\ @version\ 4.0\r\n
+comment1.params=n\ h
+comment1.target=java.lang.String\ solve(int,\ long)
+comment1.text=\r\n\ Solves\ the\ stacking\ cups\ problem.\r\n\r\n\ @param\ n\ number\ of\ cups\r\n\ @param\ h\ target\ height\ in\ centimeters\r\n\ @return\ space-separated\ cup\ heights\ in\ placement\ order,\ or\ "impossible"\r\n
+comment2.params=n
+comment2.target=java.lang.String\ allNested(int)
+comment2.text=\r\n\ Returns\ the\ placement\ order\ when\ all\ cups\ are\ nested.\r\n\ Cup\ n\ goes\ first;\ cups\ n-1\ down\ to\ 1\ follow\ inside\ it.\r\n\r\n\ @param\ n\ number\ of\ cups\r\n\ @return\ space-separated\ heights\ in\ placement\ order\r\n
+comment3.params=n
+comment3.target=java.lang.String\ allStacked(int)
+comment3.text=\r\n\ Returns\ the\ placement\ order\ when\ all\ cups\ are\ stacked.\r\n\ Cups\ go\ smallest\ to\ largest\ so\ none\ nests\ inside\ the\ previous.\r\n\r\n\ @param\ n\ number\ of\ cups\r\n\ @return\ space-separated\ heights\ in\ placement\ order\r\n
+comment4.params=contribs\ target
+comment4.target=java.util.List\ findSubsetSum(java.util.List,\ long)
+comment4.text=\r\n\ Finds\ a\ subset\ of\ contribution\ values\ that\ sums\ exactly\ to\ target.\r\n\r\n\ @param\ contribs\ list\ of\ available\ contribution\ values\r\n\ @param\ target\ \ \ required\ sum\r\n\ @return\ list\ of\ chosen\ values,\ or\ null\ if\ impossible\r\n
+comment5.params=contribs\ index\ remaining\ current
+comment5.target=boolean\ findSubsetHelper(java.util.List,\ int,\ long,\ java.util.List)
+comment5.text=\r\n\ Recursive\ backtracking\ helper\ for\ subset-sum.\r\n\ Values\ in\ contribs\ are\ used\ directly\ as\ contribution\ amounts.\r\n\r\n\ @param\ contribs\ \ list\ of\ contribution\ values\r\n\ @param\ index\ \ \ \ \ current\ position\ in\ the\ list\r\n\ @param\ remaining\ remaining\ sum\ needed\r\n\ @param\ current\ \ \ values\ chosen\ so\ far\r\n\ @return\ true\ if\ a\ valid\ subset\ was\ found\r\n
+comment6.params=n\ contributors
+comment6.target=java.lang.String\ buildOrdering(int,\ java.util.List)
+comment6.text=\r\n\ Builds\ the\ final\ cup\ placement\ order\ given\ the\ contributor\ IDs.\r\n\r\n\ Order\:\r\n\ 1.\ Cup\ n\ first\ (main\ container).\r\n\ 2.\ Non-contributors\ decreasing\ (nest\ inside\ cup\ n).\r\n\ 3.\ Contributors\ decreasing\ (stack\ on\ top\ of\ the\ nested\ group).\r\n\r\n\ @param\ n\ \ \ \ \ \ \ \ \ \ \ \ total\ number\ of\ cups\r\n\ @param\ contributors\ IDs\ of\ cups\ selected\ to\ stack\ outside\ cup\ n\r\n\ @return\ space-separated\ heights\ in\ placement\ order\r\n
+comment7.params=order
+comment7.target=java.lang.String\ orderToString(java.util.List)
+comment7.text=\r\n\ Converts\ a\ list\ of\ cup\ IDs\ to\ a\ space-separated\ string\ of\ their\ heights.\r\n\r\n\ @param\ order\ list\ of\ cup\ IDs\ in\ placement\ order\r\n\ @return\ space-separated\ heights\ string\r\n
+comment8.params=n\ h
+comment8.target=void\ simulate(int,\ int)
+comment8.text=\r\n\ Solves\ and\ visualizes\ the\ result\ in\ the\ Tower\ simulator.\r\n\r\n\ @param\ n\ number\ of\ cups\r\n\ @param\ h\ target\ height\ in\ centimeters\r\n
+numComments=9
