@@ -1,0 +1,10 @@
+#BlueJ class context
+comment0.target=TowerATest
+comment0.text=\r\n\ Acceptance\ tests\ that\ visually\ demonstrate\ the\ best\ features\ of\ the\ project.\r\n\ Each\ test\ shows\ a\ simulation\ and\ asks\ the\ user\ to\ confirm\ acceptance.\r\n\r\n\ @author\ Murillo-Rubiano\ with\ support\ of\ GPT-4o\r\n\ @version\ 1.0\r\n
+comment1.params=
+comment1.target=void\ testAcceptanceSolverSimulation()
+comment1.text=\r\n\ Acceptance\ test\ 1\:\ ICPC\ solver\ simulation.\r\n\ Shows\ the\ TowerContest\ solver\ building\ a\ tower\ of\ n\=4\ cups\r\n\ reaching\ exactly\ h\=9\ cm,\ with\ animated\ cup\ placement.\r\n
+comment2.params=
+comment2.target=void\ testAcceptanceSpecialTypes()
+comment2.text=\r\n\ Acceptance\ test\ 2\:\ Special\ cup\ and\ lid\ types\ demonstration.\r\n\ Shows\ the\ behavior\ of\ OpenerCup,\ HierarchicalCup\ and\ LockedLid\r\n\ interacting\ in\ a\ single\ tower.\r\n
+numComments=3
